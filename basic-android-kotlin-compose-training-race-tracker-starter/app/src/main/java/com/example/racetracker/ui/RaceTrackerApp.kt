@@ -50,6 +50,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.racetracker.R
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
@@ -67,7 +68,16 @@ fun RaceTrackerApp() {
         RaceParticipant(name = "Player 2", progressIncrement = 2)
     }
     var raceInProgress by remember { mutableStateOf(false) }
-
+    if(raceInProgress) {
+        LaunchedEffect(playerOne, playerTwo) {
+            // playerOne otr playerTwo が別のインスタンスになったら再コンポーズする。
+            coroutineScope{
+                launch {  playerOne.run() }
+                launch {  playerTwo.run() }
+            }
+            raceInProgress = false
+        }
+    }
     RaceTrackerScreen(
         playerOne = playerOne,
         playerTwo = playerTwo,

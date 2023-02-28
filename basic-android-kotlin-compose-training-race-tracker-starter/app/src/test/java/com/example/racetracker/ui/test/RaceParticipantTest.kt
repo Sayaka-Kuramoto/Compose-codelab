@@ -17,7 +17,13 @@
 package com.example.racetracker.ui.test
 
 import com.example.racetracker.ui.RaceParticipant
+import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.advanceTimeBy
+import kotlinx.coroutines.test.runCurrent
+import kotlinx.coroutines.test.runTest
+import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class RaceParticipantTest {
@@ -28,4 +34,26 @@ class RaceParticipantTest {
         initialProgress = 0,
         progressIncrement = 1
     )
+    @Test
+    fun raceParticipant_RaceStarted_ProgressUpdated() = runTest{
+        val expectedProgress = 1
+
+        // 非同期実行
+        launch { raceParticipant.run() }
+
+        // run()の中のdelay(500)で500ミリ秒の待ち時間が発生するので、テストでは500ミリ秒時間を進めたことにする。
+        advanceTimeBy(raceParticipant.progressDelayMillis)
+
+        // 指定された時間にスケジュール設定されたタスクを実行しないので、保留中のタスクをすべて実行する命令を出す。
+        runCurrent()
+
+        assertEquals(expectedProgress, raceParticipant.currentProgress)
+    }
+    @Test
+    fun raceParticipant_RaceFinished_ProgressUpdated() = runTest{
+        launch{ raceParticipant.run()}
+        advanceTimeBy(raceParticipant.maxProgress * raceParticipant.progressDelayMillis)
+        runCurrent()
+        assertEquals(100,raceParticipant.currentProgress)
+    }
 }
