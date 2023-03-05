@@ -41,6 +41,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.inventory.InventoryTopAppBar
 import com.example.inventory.R
@@ -55,7 +56,6 @@ object ItemDetailsDestination : NavigationDestination {
     const val itemIdArg = "itemId"
     val routeWithArgs = "$route/{$itemIdArg}"
 }
-@OptIn(ExperimentalLifecycleComposeApi::class)
 @Composable
 fun ItemDetailsScreen(
     navigateToEditItem: (Int) -> Unit,
@@ -65,7 +65,7 @@ fun ItemDetailsScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     //collectAsState() を使用して uiState StateFlow を収集し、State を介して最新の値を表します。
-    val uiState = viewModel.uiState.collectAsState()
+    //val uiState = viewModel.uiState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
     Scaffold(
         topBar = {
@@ -77,7 +77,7 @@ fun ItemDetailsScreen(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { navigateToEditItem(uiState.value.id) },
+                onClick = { navigateToEditItem(uiState.id) },
                 modifier = Modifier.navigationBarsPadding()
             ) {
                 Icon(
@@ -89,7 +89,7 @@ fun ItemDetailsScreen(
         },
     ) { innerPadding ->
         ItemDetailsBody(
-            itemUiState = uiState.value,
+            itemUiState = uiState,
             onSellItem = { viewModel.reduceQuantityByOne() },
             onDelete = {
                 coroutineScope.launch {
